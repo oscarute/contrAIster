@@ -1,3 +1,5 @@
+// Modelos que no sirven para texto→texto (imagen, audio, agentes, etc.)
+const NON_TEXT = /(tts|image|lyria|robotics|computer-use|transcribe|antigravity|deep-research|omni|nano-banana|embedding|aqa)/i;
 const BASE = "https://generativelanguage.googleapis.com/v1beta";
 
 function apiKey() {
@@ -13,19 +15,21 @@ async function request(path, options = {}) {
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(`Gemini API ${res.status}: ${body?.error?.message ?? res.statusText}`);
+    const hint = res.status === 404 ? " Prueba con otro modelo: usa list_models para ver los disponibles." : "";
+    throw new Error(`Gemini API ${res.status}: ${body?.error?.message ?? res.statusText}${hint}`);
   }
   return body;
 }
 
 export const gemini = {
   id: "gemini",
-  defaultModel: () => process.env.GEMINI_DEFAULT_MODEL || "gemini-2.5-flash",
+  reviewModel: () => process.env.GEMINI_REVIEW_MODEL || "gemini-3.1-pro-preview",
+  defaultModel: () => process.env.GEMINI_DEFAULT_MODEL || "gemini-3.5-flash",
 
   async listModels() {
     const { models = [] } = await request("/models?pageSize=200");
     return models
-      .filter((m) => m.supportedGenerationMethods?.includes("generateContent"))
+      .filter((m) => m.supportedGenerationMethods?.includes("generateContent") && !NON_TEXT.test(m.name))
       .map((m) => ({
         id: m.name.replace(/^models\//, ""),
         displayName: m.displayName,

@@ -60,7 +60,7 @@ server.registerTool(
       question: z.string().describe("La pregunta original"),
       answer: z.string().describe("La respuesta a contrastar"),
       provider: providerEnum.default("gemini"),
-      model: z.string().optional(),
+      model: z.string().optional().describe("Modelo revisor. Por defecto uno de razonamiento (GEMINI_REVIEW_MODEL)."),
       independent: z
         .boolean()
         .default(true)
@@ -70,6 +70,7 @@ server.registerTool(
   async ({ question, answer, provider, model, independent }) => {
     try {
       const p = getProvider(provider);
+      model ??= p.reviewModel?.();
       const parts = [];
       let ownAnswer = "";
       if (independent) {
