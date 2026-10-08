@@ -1,0 +1,14 @@
+﻿{
+  "name": "contraister",
+  "version": "0.1.0",
+  "description": "MCP server to cross-check an AI's answers against other AI models (starting with Gemini).",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": { "contraister": "src/index.js" },
+  "scripts": { "start": "node src/index.js", "test": "node test/smoke.js" },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.23.8"
+  }
+}
