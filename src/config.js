@@ -2,7 +2,7 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
-// Preferencias persistentes: { defaultProvider, models: { <provider>: "<modelo>" } }
+// Persistent preferences: { defaultProvider, models: { <provider>: "<model>" } }
 export const configPath = () => process.env.CONTRAISTER_CONFIG || join(homedir(), ".contraister", "config.json");
 
 export function loadConfig() {

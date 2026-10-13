@@ -1,6 +1,6 @@
 import { makeOpenAICompat } from "./openai-compat.js";
 
-// OpenRouter da acceso a modelos de muchos proveedores con una sola clave. IDs con formato "proveedor/modelo".
+// OpenRouter gives access to models from many providers with a single key. IDs look like "provider/model".
 export const openrouter = makeOpenAICompat({
   id: "openrouter",
   label: "OpenRouter",

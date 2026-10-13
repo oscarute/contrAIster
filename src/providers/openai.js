@@ -1,6 +1,6 @@
 import { makeOpenAICompat } from "./openai-compat.js";
 
-// Modelos que no sirven para texto→texto (embeddings, audio, imagen, moderación...)
+// Models that are not text-to-text (embeddings, audio, image, moderation...)
 const NON_TEXT = /(embedding|tts|whisper|dall-e|image|moderation|audio|realtime|transcribe|sora|search-preview|codex)/i;
 
 export const openai = makeOpenAICompat({
@@ -11,6 +11,6 @@ export const openai = makeOpenAICompat({
   envModel: "OPENAI_MODEL",
   suggested: "gpt-5",
   tokenParam: "max_completion_tokens",
-  skipTemperature: /^(o\d|gpt-5)/i, // los modelos de razonamiento rechazan temperature
+  skipTemperature: /^(o\d|gpt-5)/i, // reasoning models reject temperature
   filterModel: (m) => /^(gpt|o\d|chatgpt)/i.test(m.id) && !NON_TEXT.test(m.id),
 });

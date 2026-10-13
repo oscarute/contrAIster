@@ -1,9 +1,9 @@
-// Claude (Anthropic): API propia (/v1/messages), no compatible con OpenAI.
+// Claude (Anthropic): its own API (/v1/messages), not OpenAI-compatible.
 const BASE = "https://api.anthropic.com/v1";
 
 function apiKey() {
   const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) throw new Error("Falta ANTHROPIC_API_KEY en el entorno del servidor MCP.");
+  if (!key) throw new Error("Missing ANTHROPIC_API_KEY in the MCP server environment.");
   return key;
 }
 
@@ -14,7 +14,7 @@ async function request(path, options = {}) {
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const hint = res.status === 404 ? " Prueba con otro modelo: usa list_models para ver los disponibles." : "";
+    const hint = res.status === 404 ? " Try another model: use list_models to see the available ones." : "";
     throw new Error(`Anthropic API ${res.status}: ${body?.error?.message ?? res.statusText}${hint}`);
   }
   return body;
@@ -33,10 +33,10 @@ export const anthropic = {
   },
 
   async ask({ model, prompt, system, temperature, maxOutputTokens }) {
-    if (!model) throw new Error("Falta el modelo para Anthropic.");
+    if (!model) throw new Error("Missing model for Anthropic.");
     const body = {
       model,
-      max_tokens: maxOutputTokens ?? 4096, // obligatorio en esta API
+      max_tokens: maxOutputTokens ?? 4096, // required by this API
       messages: [{ role: "user", content: prompt }],
       ...(system && { system }),
     };
@@ -46,11 +46,11 @@ export const anthropic = {
     try {
       data = await send(temperature !== undefined ? { ...body, temperature } : body);
     } catch (e) {
-      if (temperature === undefined || !/temperature/i.test(e.message)) throw e; // algunos modelos no admiten temperature
+      if (temperature === undefined || !/temperature/i.test(e.message)) throw e; // some models don't accept temperature
       data = await send(body);
     }
     const text = (data.content ?? []).filter((b) => b.type === "text").map((b) => b.text).join("");
-    if (!text) throw new Error(`Anthropic no devolvió texto (${data.stop_reason ?? "sin contenido"}).`);
+    if (!text) throw new Error(`Anthropic returned no text (${data.stop_reason ?? "no content"}).`);
     const u = data.usage;
     return {
       provider: "anthropic",

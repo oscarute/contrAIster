@@ -8,10 +8,10 @@ import { pickModel, resolveProvider, savedModel } from "./models.js";
 
 const server = new McpServer({ name: "contraister", version: "0.2.0" });
 
-const providerEnum = z.enum(Object.keys(providers)).optional().describe("Proveedor. Si se omite, el preferido o el primero con clave configurada.");
+const providerEnum = z.enum(Object.keys(providers)).optional().describe("Provider. If omitted, the saved default or the first one with an API key configured.");
 const modelDesc =
-  "ID exacto del modelo. Si el usuario nombra un modelo concreto (p. ej. \"usa Gemini Pro\"), pásalo aquí; " +
-  "si no estás seguro del ID, búscalo antes con list_models (parámetro filter). Si se omite, el modelo preferido del usuario.";
+  "Exact model ID. If the user names a specific model (e.g. \"use Gemini Pro\"), pass it here; " +
+  "if you are unsure of the ID, look it up first with list_models (filter parameter). If omitted, the user's preferred model is used.";
 const ok = (text) => ({ content: [{ type: "text", text }] });
 const fail = (e) => ({ isError: true, content: [{ type: "text", text: `Error: ${e.message}` }] });
 
@@ -21,10 +21,10 @@ const formatResult = (r) =>
 server.registerTool(
   "list_models",
   {
-    description: "Lista los modelos disponibles de un proveedor de IA externo (ver get_preferences para los disponibles). Usa filter para acotar (p. ej. \"claude\", \"pro\").",
+    description: "Lists the models available from an external AI provider (see get_preferences for the available providers). Use filter to narrow the list (e.g. \"claude\", \"pro\").",
     inputSchema: {
       provider: providerEnum,
-      filter: z.string().optional().describe("Texto que debe contener el ID o nombre del modelo (sin distinguir mayúsculas)"),
+      filter: z.string().optional().describe("Text the model ID or name must contain (case-insensitive)"),
     },
   },
   async ({ provider, filter }) => {
@@ -32,9 +32,9 @@ server.registerTool(
       const p = getProvider(resolveProvider(provider));
       const f = filter?.toLowerCase();
       const models = (await p.listModels()).filter((m) => !f || `${m.id} ${m.displayName ?? ""}`.toLowerCase().includes(f));
-      if (!models.length) return ok(`Sin resultados en ${p.id}${filter ? ` para "${filter}"` : ""}.`);
+      if (!models.length) return ok(`No results in ${p.id}${filter ? ` for "${filter}"` : ""}.`);
       const shown = models.slice(0, 100);
-      const more = models.length > shown.length ? `\n\n… y ${models.length - shown.length} más; afina con filter.` : "";
+      const more = models.length > shown.length ? `\n\n… and ${models.length - shown.length} more; narrow it down with filter.` : "";
       return ok(shown.map((m) => `- ${m.id}${m.displayName ? ` (${m.displayName})` : ""}`).join("\n") + more);
     } catch (e) {
       return fail(e);
@@ -46,16 +46,16 @@ server.registerTool(
   "cross_check",
   {
     description:
-      "Contrasta una respuesta dada (p. ej. la de Claude) con otra IA: la segunda IA la revisa de forma independiente y señala errores, omisiones y discrepancias.",
+      "Cross-checks a given answer (e.g. the one you just gave) with another AI: the second AI reviews it independently and points out errors, omissions and disagreements.",
     inputSchema: {
-      question: z.string().describe("La pregunta original"),
-      answer: z.string().describe("La respuesta a contrastar"),
+      question: z.string().describe("The original question"),
+      answer: z.string().describe("The answer to cross-check"),
       provider: providerEnum,
       model: z.string().optional().describe(modelDesc),
       independent: z
         .boolean()
         .default(true)
-        .describe("Si true, la otra IA responde primero sin ver la respuesta y luego se compara (reduce sesgo de anclaje)."),
+        .describe("If true, the other AI first answers without seeing the answer and then compares (reduces anchoring bias)."),
     },
   },
   async ({ question, answer, provider, model, independent }) => {
@@ -67,20 +67,20 @@ server.registerTool(
       if (independent) {
         const r = await p.ask({ model, prompt: question });
         ownAnswer = r.text;
-        parts.push(`## Respuesta independiente\n${formatResult(r)}`);
+        parts.push(`## Independent answer\n${formatResult(r)}`);
       }
       const review = await p.ask({
         model,
         temperature: 0.2,
-        system: "Eres un revisor crítico y riguroso. Responde en el idioma de la pregunta.",
+        system: "You are a rigorous, critical reviewer. Respond in the language of the question.",
         prompt: [
-          `PREGUNTA:\n${question}`,
-          `RESPUESTA A EVALUAR:\n${answer}`,
-          independent ? `TU RESPUESTA INDEPENDIENTE:\n${ownAnswer}` : "",
-          "Evalúa la respuesta: 1) puntos en que coincide, 2) errores o afirmaciones dudosas, 3) omisiones importantes, 4) veredicto (correcta / parcialmente correcta / incorrecta) con confianza alta/media/baja.",
+          `QUESTION:\n${question}`,
+          `ANSWER TO EVALUATE:\n${answer}`,
+          independent ? `YOUR INDEPENDENT ANSWER:\n${ownAnswer}` : "",
+          "Evaluate the answer: 1) points where it agrees, 2) errors or doubtful claims, 3) important omissions, 4) verdict (correct / partially correct / incorrect) with confidence high/medium/low.",
         ].filter(Boolean).join("\n\n"),
       });
-      parts.push(`## Revisión\n${formatResult(review)}`);
+      parts.push(`## Review\n${formatResult(review)}`);
       return ok(parts.join("\n\n---\n\n"));
     } catch (e) {
       return fail(e);
@@ -91,27 +91,27 @@ server.registerTool(
 server.registerTool(
   "get_preferences",
   {
-    description: "Muestra el proveedor y los modelos preferidos configurados, y qué proveedores tienen clave de API. Úsalo antes de la primera consulta para saber si hay que preguntar al usuario su modelo preferido.",
+    description: "Shows the configured preferred provider and models, and which providers have an API key. Use it before the first query to know whether the user must be asked for their preferred model.",
     inputSchema: {},
   },
   async () => {
     const cfg = loadConfig();
     const lines = Object.values(providers).map((p) => {
-      const key = p.local ? "local, sin clave" : p.keyEnv.some((k) => process.env[k]) ? "clave OK" : `sin clave (${p.keyEnv[0]})`;
-      return `- ${p.id} [${key}]: modelo = ${savedModel(p) ?? `— (sugerido: ${p.suggested})`}`;
+      const key = p.local ? "local, no key" : p.keyEnv.some((k) => process.env[k]) ? "key OK" : `no key (${p.keyEnv[0]})`;
+      return `- ${p.id} [${key}]: model = ${savedModel(p) ?? `— (suggested: ${p.suggested})`}`;
     });
-    return ok(`Proveedor preferido: ${resolveProvider()}${cfg.defaultProvider ? "" : " (automático)"}\n${lines.join("\n")}\n\nConfig: ${configPath()}`);
+    return ok(`Preferred provider: ${resolveProvider()}${cfg.defaultProvider ? "" : " (automatic)"}\n${lines.join("\n")}\n\nConfig: ${configPath()}`);
   }
 );
 
 server.registerTool(
   "set_preferred_model",
   {
-    description: "Guarda el modelo preferido de un proveedor para cross_check y opcionalmente lo marca como proveedor por defecto.",
+    description: "Saves a provider's preferred model for cross_check and optionally marks that provider as the default.",
     inputSchema: {
       provider: z.enum(Object.keys(providers)),
-      model: z.string().describe("ID exacto del modelo"),
-      makeDefaultProvider: z.boolean().default(false).describe("Usar este proveedor cuando no se indique ninguno"),
+      model: z.string().describe("Exact model ID"),
+      makeDefaultProvider: z.boolean().default(false).describe("Use this provider when none is specified"),
     },
   },
   async ({ provider, model, makeDefaultProvider }) => {
@@ -122,15 +122,17 @@ server.registerTool(
         const known = await p.listModels();
         if (!known.some((m) => m.id === model)) {
           const near = known.filter((m) => m.id.toLowerCase().includes(model.toLowerCase())).slice(0, 8).map((m) => m.id);
-          throw new Error(`"${model}" no está en la lista de ${provider}.${near.length ? ` ¿Quizá: ${near.join(", ")}?` : ""}`);
+          const err = new Error(`"${model}" is not in ${provider}'s model list.${near.length ? ` Did you mean: ${near.join(", ")}?` : ""}`);
+          err.notInList = true;
+          throw err;
         }
       } catch (e) {
-        if (e.message.includes("no está en la lista")) throw e;
-        note = ` (no se pudo validar contra la lista: ${e.message})`;
+        if (e.notInList) throw e;
+        note = ` (could not validate against the model list: ${e.message})`;
       }
       setPref(provider, model);
       if (makeDefaultProvider) setDefaultProvider(provider);
-      return ok(`Guardado: ${provider} = ${model}${makeDefaultProvider ? " (proveedor por defecto)" : ""}${note}`);
+      return ok(`Saved: ${provider} = ${model}${makeDefaultProvider ? " (default provider)" : ""}${note}`);
     } catch (e) {
       return fail(e);
     }

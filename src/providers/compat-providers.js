@@ -1,6 +1,6 @@
 import { makeOpenAICompat } from "./openai-compat.js";
 
-// Modelos que no sirven para texto→texto (audio, voz, moderación, embeddings...)
+// Models that are not text-to-text (audio, speech, moderation, embeddings...)
 const NON_CHAT = /(embed|tts|whisper|transcribe|moderation|guard|speech|rerank|image|vision-preview)/i;
 
 export const xai = makeOpenAICompat({
@@ -54,7 +54,7 @@ export const together = makeOpenAICompat({
   mapModel: (m) => ({ id: m.id, displayName: m.display_name, inputTokenLimit: m.context_length }),
 });
 
-// Perplexity no ofrece GET /models; sus respuestas incluyen búsqueda web y fuentes.
+// Perplexity has no GET /models; its answers include web search and sources.
 export const perplexity = makeOpenAICompat({
   id: "perplexity",
   label: "Perplexity",
@@ -65,7 +65,7 @@ export const perplexity = makeOpenAICompat({
   staticModels: ["sonar", "sonar-pro", "sonar-reasoning-pro", "sonar-deep-research"],
 });
 
-// Ollama local: sin clave. Cambia la dirección con OLLAMA_HOST (p. ej. http://192.168.1.10:11434).
+// Local Ollama: no key. Change the address with OLLAMA_HOST (e.g. http://192.168.1.10:11434).
 export const ollama = makeOpenAICompat({
   id: "ollama",
   label: "Ollama",

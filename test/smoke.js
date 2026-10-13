@@ -1,4 +1,4 @@
-// Prueba de humo: arranca el servidor por stdio, lista las herramientas y comprueba la lógica de modelos sin red.
+// Smoke test: starts the server over stdio, lists the tools and checks the model logic without network access.
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -16,10 +16,10 @@ const text = async (name, args = {}) => (await client.callTool({ name, arguments
 
 console.log(await text("get_preferences"));
 
-// Sin modelo preferido ni elicitation, cross_check debe pedir que se pregunte al usuario (sin llamar a la red).
-const noPref = await client.callTool({ name: "cross_check", arguments: { question: "hola", answer: "hola", provider: "openai" } });
-if (!noPref.isError || !/set_preferred_model/.test(noPref.content[0].text)) throw new Error("cross_check debería pedir modelo preferido");
-console.log("OK: sin preferencia → pide modelo");
+// With no preferred model and no elicitation, cross_check must ask for one (without calling the network).
+const noPref = await client.callTool({ name: "cross_check", arguments: { question: "hi", answer: "hi", provider: "openai" } });
+if (!noPref.isError || !/set_preferred_model/.test(noPref.content[0].text)) throw new Error("cross_check should ask for a preferred model");
+console.log("OK: no preference -> asks for a model");
 
 if (process.env.GEMINI_API_KEY) {
   console.log((await text("list_models", { provider: "gemini" })).split("\n").slice(0, 8).join("\n"));
