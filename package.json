@@ -1,6 +1,6 @@
 {
   "name": "contraister",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "description": "MCP server to cross-check an AI's answers against other AI models (Gemini, Claude, OpenAI, Grok, Mistral, DeepSeek, Groq, Together, Perplexity, OpenRouter, Ollama).",
   "type": "module",
   "main": "src/index.js",

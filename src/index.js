@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { readFileSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -6,7 +7,9 @@ import { providers, getProvider } from "./providers/index.js";
 import { configPath, loadConfig, setDefaultProvider, setPref } from "./config.js";
 import { pickModel, resolveProvider, savedModel } from "./models.js";
 
-const server = new McpServer({ name: "contraister", version: "0.2.1" });
+// package.json sits one level up both in the npm package (src/) and in the .mcpb bundle (server/)
+const { version } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+const server = new McpServer({ name: "contraister", version });
 
 const providerEnum = z.enum(Object.keys(providers)).optional().describe("Provider. If omitted, the saved default or the first one with an API key configured.");
 const modelDesc =

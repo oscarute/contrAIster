@@ -29,13 +29,16 @@ jobs:
 
       - run: npm test
 
-      - name: Check release tag matches package.json version
+      # The release tag (vX.Y.Z) is the source of truth for the version, so package.json
+      # does not need to be bumped by hand before creating a release.
+      - name: Set version from release tag
         run: |
-          VERSION=$(node -p "require('./package.json').version")
-          if [ "v$VERSION" != "${{ github.event.release.tag_name }}" ]; then
-            echo "Tag ${{ github.event.release.tag_name }} does not match package.json version v$VERSION"
+          TAG="${{ github.event.release.tag_name }}"
+          if ! echo "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Release tag '$TAG' must look like v1.2.3"
             exit 1
           fi
+          npm version "${TAG#v}" --no-git-tag-version --allow-same-version
 
       # Build before publishing so a packaging failure stops the run before anything irreversible happens
       - name: Build Claude Desktop extension
