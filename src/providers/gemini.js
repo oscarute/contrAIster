@@ -23,8 +23,9 @@ async function request(path, options = {}) {
 
 export const gemini = {
   id: "gemini",
-  reviewModel: () => process.env.GEMINI_REVIEW_MODEL || "gemini-3.1-pro-preview",
-  defaultModel: () => process.env.GEMINI_DEFAULT_MODEL || "gemini-3.5-flash",
+  keyEnv: ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+  envModel: "GEMINI_MODEL",
+  suggested: "gemini-3.1-pro-preview",
 
   async listModels() {
     const { models = [] } = await request("/models?pageSize=200");
@@ -39,7 +40,8 @@ export const gemini = {
   },
 
   async ask({ model, prompt, system, temperature, maxOutputTokens }) {
-    const name = (model || this.defaultModel()).replace(/^models\//, "");
+    if (!model) throw new Error("Falta el modelo para Gemini.");
+    const name = model.replace(/^models\//, "");
     const generationConfig = {};
     if (temperature !== undefined) generationConfig.temperature = temperature;
     if (maxOutputTokens !== undefined) generationConfig.maxOutputTokens = maxOutputTokens;
