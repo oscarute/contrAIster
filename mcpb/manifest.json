@@ -1,0 +1,54 @@
+{
+  "manifest_version": "0.3",
+  "name": "contraister",
+  "display_name": "contrAIster",
+  "version": "0.0.0",
+  "description": "Cross-check an AI's answer against other AI models (Gemini, Claude, OpenAI, Grok, Mistral, DeepSeek, Groq, Together, Perplexity, OpenRouter, Ollama).",
+  "long_description": "contrAIster lets your AI assistant get a second opinion from other AI models. Ask it to cross-check an answer and a model from another provider answers independently, then reviews the original for errors and omissions. You bring your own API keys: fill in only the providers you want to use. Keys are stored by Claude Desktop and never leave your machine except to call the provider you choose.",
+  "author": { "name": "oscarute", "url": "https://github.com/oscarute" },
+  "repository": { "type": "git", "url": "https://github.com/oscarute/contrAIster.git" },
+  "homepage": "https://github.com/oscarute/contrAIster",
+  "license": "MIT",
+  "keywords": ["cross-check", "fact-checking", "multi-model", "gemini", "openai", "claude", "openrouter"],
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.js"],
+      "env": {
+        "GEMINI_API_KEY": "${user_config.gemini_api_key}",
+        "ANTHROPIC_API_KEY": "${user_config.anthropic_api_key}",
+        "OPENAI_API_KEY": "${user_config.openai_api_key}",
+        "XAI_API_KEY": "${user_config.xai_api_key}",
+        "MISTRAL_API_KEY": "${user_config.mistral_api_key}",
+        "DEEPSEEK_API_KEY": "${user_config.deepseek_api_key}",
+        "GROQ_API_KEY": "${user_config.groq_api_key}",
+        "TOGETHER_API_KEY": "${user_config.together_api_key}",
+        "PERPLEXITY_API_KEY": "${user_config.perplexity_api_key}",
+        "OPENROUTER_API_KEY": "${user_config.openrouter_api_key}",
+        "OLLAMA_HOST": "${user_config.ollama_host}"
+      }
+    }
+  },
+  "tools": [
+    { "name": "cross_check", "description": "Cross-check an answer with another AI model." },
+    { "name": "list_models", "description": "List the models available from a provider." },
+    { "name": "get_preferences", "description": "Show the preferred provider/model and which providers have a key." },
+    { "name": "set_preferred_model", "description": "Save the preferred model for a provider." }
+  ],
+  "user_config": {
+    "gemini_api_key": { "type": "string", "title": "Gemini API key", "description": "From https://aistudio.google.com/apikey", "sensitive": true, "required": false },
+    "anthropic_api_key": { "type": "string", "title": "Anthropic (Claude) API key", "description": "From https://console.anthropic.com", "sensitive": true, "required": false },
+    "openai_api_key": { "type": "string", "title": "OpenAI API key", "description": "From https://platform.openai.com/api-keys", "sensitive": true, "required": false },
+    "xai_api_key": { "type": "string", "title": "xAI (Grok) API key", "description": "From https://console.x.ai", "sensitive": true, "required": false },
+    "mistral_api_key": { "type": "string", "title": "Mistral API key", "description": "From https://console.mistral.ai", "sensitive": true, "required": false },
+    "deepseek_api_key": { "type": "string", "title": "DeepSeek API key", "description": "From https://platform.deepseek.com", "sensitive": true, "required": false },
+    "groq_api_key": { "type": "string", "title": "Groq API key", "description": "From https://console.groq.com/keys", "sensitive": true, "required": false },
+    "together_api_key": { "type": "string", "title": "Together API key", "description": "From https://api.together.xyz/settings/api-keys", "sensitive": true, "required": false },
+    "perplexity_api_key": { "type": "string", "title": "Perplexity API key", "description": "From https://www.perplexity.ai/settings/api", "sensitive": true, "required": false },
+    "openrouter_api_key": { "type": "string", "title": "OpenRouter API key", "description": "From https://openrouter.ai/keys (one key for hundreds of models)", "sensitive": true, "required": false },
+    "ollama_host": { "type": "string", "title": "Ollama address (optional)", "description": "Only for a local Ollama on a non-default address. Default: http://localhost:11434", "default": "http://localhost:11434", "required": false }
+  },
+  "compatibility": { "runtimes": { "node": ">=18" } }
+}

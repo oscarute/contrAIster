@@ -32,7 +32,11 @@ Add this to your MCP client's configuration, with the keys of the providers you 
 
 The first start downloads the package and can take several seconds; later starts are faster. `@latest` makes `npx` check for new versions; pin a version (e.g. `contraister@0.2.0`) if you prefer.
 
-### Where to put it
+### Claude Desktop: one-click install (.mcpb)
+
+Download `contraister-<version>.mcpb` from the [latest release](https://github.com/oscarute/contrAIster/releases/latest) and open it with Claude Desktop (or drag it into Settings → Extensions). It asks for your API keys in a form (all optional; fill in only the providers you use) and needs no Node.js, JSON editing or terminal.
+
+### Where to put it (manual configuration)
 
 | Client | Where |
 |---|---|

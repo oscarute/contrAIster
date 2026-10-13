@@ -6,7 +6,7 @@ import { providers, getProvider } from "./providers/index.js";
 import { configPath, loadConfig, setDefaultProvider, setPref } from "./config.js";
 import { pickModel, resolveProvider, savedModel } from "./models.js";
 
-const server = new McpServer({ name: "contraister", version: "0.2.0" });
+const server = new McpServer({ name: "contraister", version: "0.2.1" });
 
 const providerEnum = z.enum(Object.keys(providers)).optional().describe("Provider. If omitted, the saved default or the first one with an API key configured.");
 const modelDesc =
